@@ -1,0 +1,67 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: genealogy-gramps-web_web_1
+      APP_PORT: 5000
+
+  web:
+    image: ghcr.io/gramps-project/grampsweb:latest
+    restart: always
+    stop_grace_period: 1m
+    init: true
+
+    environment:
+      GRAMPSWEB_TREE: "Gramps Web"
+      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://redis:6379/0"
+      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://redis:6379/0"
+      GRAMPSWEB_RATELIMIT_STORAGE_URI: "redis://redis:6379/1"
+
+    depends_on:
+      - redis
+
+    volumes:
+      - ${APP_DATA_DIR}/data/users:/app/users
+      - ${APP_DATA_DIR}/data/indexdir:/app/indexdir
+      - ${APP_DATA_DIR}/data/thumbnail_cache:/app/thumbnail_cache
+      - ${APP_DATA_DIR}/data/cache:/app/cache
+      - ${APP_DATA_DIR}/data/secret:/app/secret
+      - ${APP_DATA_DIR}/data/grampsdb:/root/.gramps/grampsdb
+      - ${APP_DATA_DIR}/data/media:/app/media
+      - ${APP_DATA_DIR}/data/tmp:/tmp
+
+  celery:
+    image: ghcr.io/gramps-project/grampsweb:latest
+    restart: always
+    stop_grace_period: 1m
+    init: true
+
+    environment:
+      GRAMPSWEB_TREE: "Gramps Web"
+      GRAMPSWEB_CELERY_CONFIG__broker_url: "redis://redis:6379/0"
+      GRAMPSWEB_CELERY_CONFIG__result_backend: "redis://redis:6379/0"
+      GRAMPSWEB_RATELIMIT_STORAGE_URI: "redis://redis:6379/1"
+
+    depends_on:
+      - web
+      - redis
+
+    command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
+
+    volumes:
+      - ${APP_DATA_DIR}/data/users:/app/users
+      - ${APP_DATA_DIR}/data/indexdir:/app/indexdir
+      - ${APP_DATA_DIR}/data/thumbnail_cache:/app/thumbnail_cache
+      - ${APP_DATA_DIR}/data/cache:/app/cache
+      - ${APP_DATA_DIR}/data/secret:/app/secret
+      - ${APP_DATA_DIR}/data/grampsdb:/root/.gramps/grampsdb
+      - ${APP_DATA_DIR}/data/media:/app/media
+      - ${APP_DATA_DIR}/data/tmp:/tmp
+
+  redis:
+    image: docker.io/valkey/valkey:8-alpine
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - ${APP_DATA_DIR}/data/redis:/data

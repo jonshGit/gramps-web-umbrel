@@ -1,0 +1,17 @@
+manifestVersion: 1
+id: genealogy-gramps-web
+category: files
+name: Gramps Web
+version: "1.0.0"
+tagline: Stammbaum und Familiengeschichte selbst hosten
+description: >-
+  Gramps Web ist eine selbst gehostete Genealogie-Anwendung zum Verwalten
+  von Personen, Familien, Ereignissen, Orten, Quellen, Notizen und Medien.
+  Die Daten bleiben auf deinem Umbrel-Server.
+developer: Gramps Project
+website: https://www.grampsweb.org
+repo: https://github.com/gramps-project/gramps-web
+support: https://github.com/gramps-project/gramps-web/issues
+port: 5000
+gallery: []
+path: ""
